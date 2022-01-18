@@ -1,0 +1,628 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "../pb";
+
+service MDS {
+    // volume commands
+    rpc CreateVolume(CreateVolumeRequest) returns (CreateVolumeResponse) {}
+
+    // session commands
+    rpc NewSession(NewSessionRequest) returns (NewSessionResponse) {}
+    rpc SessionHeartbeat(SessionHeartbeatRequest) returns (SessionHeartbeatResponse) {}
+    rpc CleanInvalidSessions(CleanInvalidSessionsRequest) returns (CleanInvalidSessionsResponse) {}
+
+    // attributes commands
+    rpc GetAttr(GetAttrRequest) returns (GetAttrResponse) {}
+    rpc SetAttr(SetAttrRequest) returns (SetAttrResponse) {}
+
+    // extended attributes commands
+    rpc GetXAttr(GetXAttrRequest) returns (GetXAttrResponse) {}
+    rpc SetXAttr(SetXAttrResponse) returns (SetXAttrResponse) {}
+    rpc ListXAttr(ListXAttrRequest) returns (ListXAttrResponse) {}
+    rpc RemoveXAttr(RemoveXAttrRequest) returns (RemoveXAttrResponse) {}
+
+    // filesystem commands
+    rpc StatFS(StatFSRequest) returns (StatFSResponse) {}
+    rpc Mknod(MknodRequest) returns (MknodResponse) {}
+    rpc Mkdir(MkdirRequest) returns (MkdirResponse) {}
+    rpc Unlink(UnlinkRequest) returns (UnlinkResponse) {}
+    rpc Rmdir(RmdirRequest) returns (RmdirResponse) {}
+    rpc Rename(RenameRequest) returns (RenameResponse) {}
+    rpc Link(LinkRequest) returns (LinkResponse) {}
+    rpc Symlink(SymlinkRequest) returns (SymlinkResponse) {}
+    rpc Access(AccessRequest) returns (AccessResponse) {}
+
+    // file commands
+    rpc Create(CreateRequest) returns (CreateResponse) {}
+    rpc Open(OpenRequest) returns (OpenResponse) {}
+    rpc Close(CloseRequest) returns (CloseResponse) {}
+    rpc Read(ReadRequest) returns (ReadResponse) {}
+    rpc Write(WriteRequest) returns (WriteResponse) {}
+    rpc Truncate(TruncateRequest) returns (TruncateResponse) {}
+    rpc Fallocate(FallocateRequest) returns (FallocateResponse) {}
+    rpc Flock(FlockRequest) returns (FlockResponse) {}
+    rpc Getlk(GetlkRequest) returns (GetlkResponse) {}
+    rpc Setlk(SetlkRequest) returns (SetlkResponse) {}
+    rpc CopyFileRange(CopyFileRangeRequest) returns (CopyFileRangeResponse) {}
+
+    // directory commands
+    rpc Lookup(LookupRequest) returns (LookupResponse) {}
+    rpc Resolve(ResolveRequest) returns (ResolveResponse) {}
+    rpc Readdir(ReaddirRequest) returns (ReaddirResponse) {}
+
+    // counter
+    rpc NextInode(NextInodeRequest) returns (NextInodeResponse) {}
+    rpc NextSlice(NextSliceRequest) returns (NextSliceResponse) {}
+
+    // compaction commands
+    rpc FindCompactChunk(FindCompactChunkRequest) returns (FindCompactChunkResponse) {}
+    rpc CompactSlices(CompactSlicesRequest) returns (CompactSlicesResponse) {}
+    rpc UpdateNeedCompact(UpdateNeedCompactRequest) returns (UpdateNeedCompactResponse) {}
+    rpc CommitCompact(CommitCompactRequest) returns (CommitCompactResponse) {}
+    rpc ListSlices(ListSlicesRequest) returns (ListSlicesResponse) {}
+
+    // cleanup commands
+    rpc GetChunks(GetChunksRequest) returns (GetChunksResponse) {}
+    rpc DelChunk(DelChunkRequest) returns (DelChunkResponse) {}
+    rpc GetDelFiles(GetDelFilesRequest) returns (GetDelFilesResponse) {}
+    rpc DelDelFile(DelDelFileRequest) returns (DelDelFileResponse) {}
+}
+
+message Context {
+    string trace_id = 1;
+}
+
+message Error {
+    string errmsg = 1;
+    uint32 errcode = 2;
+}
+
+message Attr {
+	uint32 Flags = 1;
+	uint32 Type = 2;        // Type | Mode 为fuse.Attr.Mode(uint32) :0xf000
+	uint32 Mode = 3;        // 3位SUID位，第10位为SGID位，第9位为sticky位 + 9位rwxrwxrwx
+	uint32 Uid = 4;         // owner id
+	uint32 Gid = 5;         // group id
+	uint64 Atime = 6;       // last access time
+	uint64 Mtime = 7;       // last modified time
+	uint64 Ctime = 8;       // last change time for meta
+	uint32 Atimensec = 9;   // nanosecond part of atime
+	uint32 Mtimensec = 10;  // nanosecond part of mtime
+	uint32 Ctimensec = 11;  // nanosecond part of ctime
+	uint32 Nlink = 12;      // number of links (sub-directories or hardlinks)
+	uint64 Length = 13;     // length of regular file
+	uint32 Rdev = 14;       // device number
+    uint64 INode = 15;
+	uint64 Parent = 16;     // inode of parent, only for Directory
+	bool Full = 17;         // the attrib utes are completed or not
+}
+
+message Entry {
+    string name = 1;
+    Attr attr = 2;
+}
+
+message CreateVolumeRequest {
+    Context context = 1;
+}
+
+message CreateVolumeResponse {
+    Error error = 1;
+}
+
+message NewSessionRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    string mnt_point = 3;
+    string hostname = 4;
+    string process_id = 5;
+}
+
+message NewSessionResponse {
+    Error error = 1;
+    uint64 session_id = 2;
+}
+
+message SessionHeartbeatRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 session_id = 3;
+    uint64 timestamp = 4;
+}
+
+message SessionHeartbeatResponse {
+    Error error = 1;
+}
+
+message CleanInvalidSessionsRequest {
+    Context context = 1;
+    repeated uint64 volume_id = 2;
+}
+
+message CleanInvalidSessionsResponse {
+    Error error = 1;
+}
+
+message GetAttrRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+}
+
+message GetAttrResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message SetAttrRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    bool mod_set = 4;
+    bool gid_set = 5;
+    bool uid_set = 6;
+    bool atime_set = 7;
+    bool mtime_set = 8;
+    bool size_set = 9;
+}
+
+message SetAttrResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message GetXAttrRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    string name = 4;
+}
+
+message GetXAttrResponse {
+    Error error = 1;
+    bytes value = 2;
+}
+
+message SetXAttrRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    string name = 4;
+    bytes value = 5;
+}
+
+message SetXAttrResponse {
+    Error error = 1;
+}
+
+message ListXAttrRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+}
+
+message ListXAttrResponse {
+    Error error = 1;
+    repeated bytes names = 2;
+}
+
+message RemoveXAttrRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    string name = 4;
+}
+
+message RemoveXAttrResponse {
+    Error error = 1;
+}
+
+message StatFSRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+}
+
+message StatFSResponse {
+    Error error = 1;
+    uint64 total_space = 2;
+    uint64 avail_space = 3;
+    uint64 used_inode = 4;
+    uint64 avail_inode = 5;
+}
+
+message MknodRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 parent_id = 3;
+    string name = 4;
+    uint32 type = 5;
+    uint32 mode = 6;
+    uint32 cumask = 7;
+    uint32 rdev = 8;
+}
+
+message MknodResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message MkdirRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 parent_id = 3;
+    string name = 4;
+    uint32 mode = 5;
+    uint32 cumask = 6;
+    uint32 copysgid = 7;
+}
+
+message MkdirResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message UnlinkRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 parent_id = 3;
+    string name = 4;
+}
+
+message UnlinkResponse {
+    Error error = 1;
+}
+
+message RmdirRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 parent_id = 3;
+    string name = 4;
+}
+
+message RmdirResponse {
+    Error error = 1;
+}
+
+message RenameRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 src_parent_id = 3;
+    string src_name = 4;
+    uint64 dst_parent_id = 5;
+    string dst_name = 6;
+}
+
+message RenameResponse {
+    Error error = 1;
+}
+
+message LinkRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 src_node_id = 3;
+    uint64 parent_id = 4;
+    string name = 5;
+}
+
+message LinkResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message SymlinkRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 parent_id = 3;
+    string name = 4;
+    string path = 5;
+}
+
+message SymlinkResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message AccessRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint32 modemask = 4;
+}
+
+message AccessResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message CreateRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 parent_id = 3;
+    string name = 4;
+    uint32 mode = 5;
+    uint32 umask = 6;
+}
+
+message CreateResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message OpenRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint32 flags = 4;
+}
+
+message OpenResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message CloseRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+}
+
+message CloseResponse {
+    Error error = 1;
+}
+
+message ReadRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint64 chunk_id = 4;
+}
+
+message ReadResponse {
+    Error error = 1;
+    bytes value = 2;
+}
+
+message WriteRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint64 chunk_id = 4;
+    bytes value = 5;
+}
+
+message WriteResponse {
+    Error error = 1;
+}
+
+message TruncateRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint32 flags = 4;
+    uint64 length = 5;
+}
+
+message TruncateResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message FallocateRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint32 mode = 4;
+    uint64 off = 5;
+    uint64 size = 6;
+}
+
+message FallocateResponse {
+    Error error = 1;
+}
+
+message FlockRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint64 owner = 4;
+    uint32 ltype = 5;
+    bool block = 6;
+}
+
+message FlockResponse {
+    Error error = 1;
+}
+
+message GetlkRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint64 owner = 4;
+    uint32 ltype = 5;
+    uint64 start = 6;
+    uint64 end = 7;
+    uint32 pid = 8;
+}
+
+message GetlkResponse {
+    Error error = 1;
+}
+
+message SetlkRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint64 owner = 4;
+    bool block = 5;
+    uint32 ltype = 6;
+    uint64 start = 7;
+    uint64 end = 8;
+    uint32 pid = 9;
+}
+
+message SetlkResponse {
+    Error error = 1;
+}
+
+message CopyFileRangeRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 fin = 3;
+    uint64 offIn = 4;
+    uint64 fout = 5;
+    uint64 offOut = 6;
+    uint64 size = 7;
+    uint32 flags = 8;
+}
+
+message CopyFileRangeResponse {
+    Error error = 1;
+    uint64 copied = 2;
+}
+
+message LookupRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 parent_id = 3;
+    string name = 4;
+}
+
+message LookupResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message ResolveRequest {
+    Context context = 1;
+    uint64 parent_id = 2;
+    string path = 3;
+}
+
+message ResolveResponse {
+    Error error = 1;
+    Attr attr = 2;
+}
+
+message ReaddirRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    bool want_attr = 3;
+    uint64 off = 4;
+    uint64 size = 5;
+}
+
+message ReaddirResponse {
+    Error error = 1;
+    repeated Entry entry = 2;
+}
+
+message NextInodeRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+}
+
+message NextInodeResponse {
+    Error error = 1;
+    uint64 node_id = 2;
+}
+
+message NextSliceRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+}
+
+message NextSliceResponse {
+    Error error = 1;
+    uint64 slice_id = 2;
+}
+
+message FindCompactChunkRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint32 limit = 3;
+    uint64 last_time = 4;
+}
+
+message FindCompactChunkResponse {
+    Error error = 1;
+}
+
+message CompactSlicesRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+}
+
+message CompactSlicesResponse {
+    Error error = 1;
+}
+
+message UpdateNeedCompactRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+}
+
+message UpdateNeedCompactResponse {
+    Error error = 1;
+}
+
+message CommitCompactRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+}
+
+message CommitCompactResponse {
+    Error error = 1;
+}
+
+message ListSlicesRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+}
+
+message ListSlicesResponse {
+    Error error = 1;
+}
+
+message GetChunksRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+}
+
+message GetChunksResponse {
+    Error error = 1;
+}
+
+message DelChunkRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+    uint64 chunk_id = 4;
+}
+
+message DelChunkResponse {
+    Error error = 1;
+}
+
+message GetDelFilesRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 before_ts = 3;
+    uint32 limit = 4;
+}
+
+message GetDelFilesResponse {
+    Error error = 1;
+}
+
+message DelDelFileRequest {
+    Context context = 1;
+    uint64 volume_id = 2;
+    uint64 node_id = 3;
+}
+
+message DelDelFileResponse {
+    Error error = 1;
+}
