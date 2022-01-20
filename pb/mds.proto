@@ -80,28 +80,37 @@ message Error {
 }
 
 message Attr {
-	uint32 Flags = 1;
-	uint32 Type = 2;        // Type | Mode 为fuse.Attr.Mode(uint32) :0xf000
-	uint32 Mode = 3;        // 3位SUID位，第10位为SGID位，第9位为sticky位 + 9位rwxrwxrwx
-	uint32 Uid = 4;         // owner id
-	uint32 Gid = 5;         // group id
-	uint64 Atime = 6;       // last access time
-	uint64 Mtime = 7;       // last modified time
-	uint64 Ctime = 8;       // last change time for meta
-	uint32 Atimensec = 9;   // nanosecond part of atime
-	uint32 Mtimensec = 10;  // nanosecond part of mtime
-	uint32 Ctimensec = 11;  // nanosecond part of ctime
-	uint32 Nlink = 12;      // number of links (sub-directories or hardlinks)
-	uint64 Length = 13;     // length of regular file
-	uint32 Rdev = 14;       // device number
-    uint64 INode = 15;
-	uint64 Parent = 16;     // inode of parent, only for Directory
-	bool Full = 17;         // the attrib utes are completed or not
+	uint32 flags = 1;
+	uint32 type = 2;        // Type | Mode 为fuse.Attr.Mode(uint32) :0xf000
+	uint32 mode = 3;        // 3位SUID位，第10位为SGID位，第9位为sticky位 + 9位rwxrwxrwx
+	uint32 uid = 4;         // owner id
+	uint32 gid = 5;         // group id
+	uint64 atime = 6;       // last access time
+	uint64 mtime = 7;       // last modified time
+	uint64 ctime = 8;       // last change time for meta
+	uint32 atimensec = 9;   // nanosecond part of atime
+	uint32 mtimensec = 10;  // nanosecond part of mtime
+	uint32 ctimensec = 11;  // nanosecond part of ctime
+	uint32 nlink = 12;      // number of links (sub-directories or hardlinks)
+	uint64 length = 13;     // length of regular file
+	uint32 rdev = 14;       // device number
+    uint64 inode = 15;      // inode of self
+	uint64 parent = 16;     // inode of parent, only for Directory
+	bool full = 17;         // the attrib utes are completed or not
 }
 
 message Entry {
-    string name = 1;
-    Attr attr = 2;
+    uint64 inode = 1;
+    string name = 2;
+    Attr attr = 3;
+}
+
+message Slice {
+    uint64 id = 1;
+    uint32 size = 2;
+    uint32 pos = 3;
+    uint32 off = 4;
+    uint32 len = 5;
 }
 
 message CreateVolumeRequest {

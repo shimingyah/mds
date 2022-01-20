@@ -1,32 +1,27 @@
 package meta
 
 import (
-	"errors"
+	"sync/atomic"
 
-	"github.com/shimingyah/mds/pb"
+	"github.com/shimingyah/mds/store"
 )
 
-type Meta struct {
-	mdsClient *MDSClient
+type meta struct {
+	engine    store.Engine
+	newSpace  int64
+	newInodes int64
 }
 
-func NewMeta() (*Meta, error) {
-	return &Meta{}, nil
+func (m *meta) Txn(fn func(store.KVTxn) error) error {
+	return m.engine.Txn(fn)
 }
 
-func (m *Meta) newPbClient() (*PbClient, error) {
-	return m.mdsClient.NewPbClient()
+func (m *meta) updateStats(space int64, inodes int64) {
+	atomic.AddInt64(&m.newSpace, space)
+	atomic.AddInt64(&m.newInodes, inodes)
 }
 
-func checkError(err error, pbErr *pb.Error) error {
-	if err != nil {
-		return err
-	}
-	if pbErr == nil {
-		return nil
-	}
-	if pbErr.Errcode != 0 {
-		return errors.New(pbErr.Errmsg)
-	}
-	return nil
+// SliceMergeFunc Merge function to append one byte slice to another
+func SliceMergeFunc(originalValue, newValue []byte) []byte {
+	return append(originalValue, newValue...)
 }

@@ -3,6 +3,8 @@ module github.com/shimingyah/mds
 go 1.16
 
 require (
+	github.com/dgraph-io/badger/v3 v3.2103.2
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.4.0
