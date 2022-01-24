@@ -113,6 +113,13 @@ message Slice {
     uint32 len = 5;
 }
 
+message Chunk {
+    uint32 volume_id = 1;
+    uint64 node_id = 2;
+    uint64 index = 3;
+    bytes slices = 4;
+}
+
 message CreateVolumeRequest {
     Context context = 1;
 }

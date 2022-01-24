@@ -3,7 +3,7 @@ package meta
 const (
 	RetryNumber      = 3
 	SliceTypeSize    = 24
-	plockRecordSize  = 24
+	PlockRecordSize  = 24
 	MetricMeta       = "rpc.meta"
 	MetricMetaCallee = "meta"
 
@@ -14,8 +14,13 @@ const (
 )
 
 const (
-	// CompactChunkMsg is a message to compact a chunk in object store.
-	CompactChunkMsg = 1000
+	// fallocate
+	fallocKeepSize  = 0x01
+	fallocPunchHole = 0x02
+	// RESERVED: fallocNoHideStale   = 0x04
+	fallocCollapesRange = 0x08
+	fallocZeroRange     = 0x10
+	fallocInsertRange   = 0x20
 )
 
 const (
@@ -26,4 +31,17 @@ const (
 	TypeBlockDev  = 5 // type for block device
 	TypeCharDev   = 6 // type for character device
 	TypeSocket    = 7 // type for socket
+)
+
+const (
+	// SetAttrMode is a mask to update a attribute of node
+	SetAttrMode = 1 << iota
+	SetAttrUID
+	SetAttrGID
+	SetAttrSize
+	SetAttrAtime
+	SetAttrMtime
+	SetAttrCtime
+	SetAttrAtimeNow
+	SetAttrMtimeNow
 )

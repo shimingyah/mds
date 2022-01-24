@@ -4,8 +4,8 @@ go 1.16
 
 require (
 	github.com/dgraph-io/badger/v3 v3.2103.2
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.4.0
 	github.com/shimingyah/pool v0.0.0-20190724082523-04bd98b0fbfe
@@ -15,3 +15,5 @@ require (
 	google.golang.org/grpc v1.43.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
+
+replace github.com/dgraph-io/badger/v3 => github.com/shimingyah/badger/v3 v3.2103.3

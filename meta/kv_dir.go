@@ -8,6 +8,14 @@ import (
 	"github.com/shimingyah/mds/store"
 )
 
+func (m *meta) StatFS(ctx context.Context, volumeID uint32, totalspace, availspace, iused, iavail *uint64) syscall.Errno {
+	*totalspace = 0
+	*availspace = 0
+	*iused = 0
+	*iavail = 0
+	return 0
+}
+
 func (m *meta) Lookup(ctx context.Context, volumeID uint32, parent uint64, name string, attr *pb.Attr) syscall.Errno {
 	val, err := m.Get(m.DentryKey(volumeID, parent, name))
 	if store.IsKeyNotFound(err) {
@@ -108,5 +116,9 @@ func (m *meta) Readdir(ctx context.Context, volumeID uint32, nodeID uint64, want
 		*entries = append(*entries)
 	}
 
+	return 0
+}
+
+func (m *meta) Resolve(ctx context.Context, parent uint64, path string, attr *pb.Attr) syscall.Errno {
 	return 0
 }

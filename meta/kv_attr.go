@@ -99,6 +99,15 @@ func (m *meta) GetXAttr(ctx context.Context, volumeID uint32, nodeID uint64, nam
 	return errno(err)
 }
 
+func (m *meta) SetXAttr(ctx context.Context, volumeID uint32, nodeID uint64, name string, value []byte) syscall.Errno {
+	if name == "" {
+		return syscall.EINVAL
+	}
+	return errno(m.Txn(func(txn store.KVTxn) error {
+		return txn.Set(m.XattrKey(volumeID, nodeID, name), value)
+	}))
+}
+
 func (m *meta) ListXAttr(ctx context.Context, volumeID uint32, nodeID uint64, names *[]byte) syscall.Errno {
 	keys, err := m.ScanKeys(m.XattrKey(volumeID, nodeID, ""), 0)
 	if store.IsKeyNotFound(err) {
@@ -114,15 +123,6 @@ func (m *meta) ListXAttr(ctx context.Context, volumeID uint32, nodeID uint64, na
 		*names = append(*names, 0)
 	}
 	return 0
-}
-
-func (m *meta) SetXAttr(ctx context.Context, volumeID uint32, nodeID uint64, name string, value []byte) syscall.Errno {
-	if name == "" {
-		return syscall.EINVAL
-	}
-	return errno(m.Txn(func(txn store.KVTxn) error {
-		return txn.Set(m.XattrKey(volumeID, nodeID, name), value)
-	}))
 }
 
 func (m *meta) RemoveXAttr(ctx context.Context, volumeID uint32, nodeID uint64, name string) syscall.Errno {

@@ -10,6 +10,18 @@ import (
 	"github.com/shimingyah/mds/utils"
 )
 
+func (m *meta) Create(ctx context.Context, volumeID uint32, parent uint64, name string, mode uint16, umask uint16, attr *pb.Attr) syscall.Errno {
+	return 0
+}
+
+func (m *meta) Open(ctx context.Context, volumeID uint32, nodeID uint64, flags uint8, attr *pb.Attr) syscall.Errno {
+	return 0
+}
+
+func (m *meta) Close(ctx context.Context, volumeID uint32, nodeID uint64) syscall.Errno {
+	return 0
+}
+
 func (m *meta) Read(ctx context.Context, volumeID uint32, nodeID uint64, indx uint32, slices *[]*pb.Slice) syscall.Errno {
 	return errno(m.Txn(func(txn store.KVTxn) error {
 		val, err := txn.Merge(m.ChunkKey(volumeID, nodeID, indx), SliceMergeFunc)
@@ -21,7 +33,7 @@ func (m *meta) Read(ctx context.Context, volumeID uint32, nodeID uint64, indx ui
 		}
 		*slices = m.unmarshalSlices(val)
 		if m.shouldCompact(*slices) {
-			// go compaction
+			// TODO: go compaction
 		}
 		return nil
 	}))
@@ -68,4 +80,16 @@ func (m *meta) Write(ctx context.Context, volumeID uint32, nodeID uint64, indx u
 		m.updateStats(newSpace, 0)
 	}
 	return errno(err)
+}
+
+func (m *meta) Truncate(ctx context.Context, volumeID uint, nodeID uint64, flags uint8, length uint64, attr *pb.Attr) syscall.Errno {
+	return 0
+}
+
+func (m *meta) Fallocate(ctx context.Context, volumeID uint32, nodeID uint64, mode uint8, off uint64, size uint64) syscall.Errno {
+	return 0
+}
+
+func (m *meta) CopyFileRange(ctx context.Context, volumeID uint32, fin uint64, offIn uint64, fout uint64, offOut uint64, size uint64, flags uint32, copied *uint64) syscall.Errno {
+	return 0
 }

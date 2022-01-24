@@ -3,7 +3,6 @@ package store
 import (
 	"bytes"
 	"encoding/binary"
-	"time"
 
 	"github.com/dgraph-io/badger/v3"
 )
@@ -244,13 +243,11 @@ func (txn *kvTxn) Exist(key []byte) (bool, error) {
 }
 
 func (txn *kvTxn) Add(key, value []byte) error {
-	return txn.Txn.SetEntry(badger.NewEntry(key, value))
+	return txn.Txn.Add(key, value)
 }
 
 func (txn *kvTxn) Merge(key []byte, fn MergeFunc) ([]byte, error) {
-	m := txn.db.GetMergeOperator(key, badger.MergeFunc(fn), 5*time.Second)
-	defer m.Stop()
-	return m.Get()
+	return txn.Merge(key, fn)
 }
 
 func (txn *kvTxn) ScanRange(begin, end []byte) (map[string][]byte, error) {
