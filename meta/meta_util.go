@@ -121,7 +121,7 @@ func (m *meta) SessionInfoKey(volumeID uint32, sessionID uint64) []byte {
 }
 
 func (m *meta) Get(key []byte) (val []byte, err error) {
-	err = m.engine.View(func(txn store.KVTxn) error {
+	err = m.engine.View(func(txn store.Txn) error {
 		val, err = txn.Get(key)
 		return err
 	})
@@ -132,7 +132,7 @@ func (m *meta) Get(key []byte) (val []byte, err error) {
 }
 
 func (m *meta) GetCounter(key []byte) (val uint64, err error) {
-	err = m.engine.Update(func(txn store.KVTxn) error {
+	err = m.engine.Update(func(txn store.Txn) error {
 		val, err = txn.Incr(key, 0)
 		return err
 	})
@@ -143,7 +143,7 @@ func (m *meta) GetCounter(key []byte) (val uint64, err error) {
 }
 
 func (m *meta) ScanKeys(prefix []byte, limit int) (keys [][]byte, err error) {
-	err = m.engine.View(func(txn store.KVTxn) error {
+	err = m.engine.View(func(txn store.Txn) error {
 		keys, err = txn.ScanKeys(prefix, limit)
 		return err
 	})
@@ -154,7 +154,7 @@ func (m *meta) ScanKeys(prefix []byte, limit int) (keys [][]byte, err error) {
 }
 
 func (m *meta) ScanValues(prefix []byte, limit int) (values map[string][]byte, err error) {
-	err = m.engine.View(func(txn store.KVTxn) error {
+	err = m.engine.View(func(txn store.Txn) error {
 		values, err = txn.ScanValues(prefix, limit)
 		return err
 	})

@@ -12,7 +12,7 @@ type meta struct {
 	newInodes int64
 }
 
-func (m *meta) Txn(fn func(store.KVTxn) error) error {
+func (m *meta) Txn(fn func(store.Txn) error) error {
 	return m.engine.Txn(fn)
 }
 

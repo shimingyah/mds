@@ -21,7 +21,7 @@ func (m *meta) GetAttr(ctx context.Context, volumeID uint32, nodeID uint64, attr
 }
 
 func (m *meta) SetAttr(ctx context.Context, volumeID uint32, nodeID uint64, uid, gid uint32, modeSet, gidSet, uidSet, atimeSet, mtimeSet, sizeSet bool, attr *pb.Attr) syscall.Errno {
-	return errno(m.Txn(func(txn store.KVTxn) error {
+	return errno(m.Txn(func(txn store.Txn) error {
 		val, err := m.Get(m.InodeKey(volumeID, nodeID))
 		if store.IsKeyNotFound(err) {
 			return syscall.ENOENT
@@ -103,7 +103,7 @@ func (m *meta) SetXAttr(ctx context.Context, volumeID uint32, nodeID uint64, nam
 	if name == "" {
 		return syscall.EINVAL
 	}
-	return errno(m.Txn(func(txn store.KVTxn) error {
+	return errno(m.Txn(func(txn store.Txn) error {
 		return txn.Set(m.XattrKey(volumeID, nodeID, name), value)
 	}))
 }
@@ -129,7 +129,7 @@ func (m *meta) RemoveXAttr(ctx context.Context, volumeID uint32, nodeID uint64, 
 	if name == "" {
 		return syscall.EINVAL
 	}
-	return errno(m.Txn(func(txn store.KVTxn) error {
+	return errno(m.Txn(func(txn store.Txn) error {
 		key := m.XattrKey(volumeID, nodeID, name)
 		has, err := txn.Exist(key)
 		if err != nil {

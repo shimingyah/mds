@@ -23,7 +23,7 @@ func (m *meta) Close(ctx context.Context, volumeID uint32, nodeID uint64) syscal
 }
 
 func (m *meta) Read(ctx context.Context, volumeID uint32, nodeID uint64, indx uint32, slices *[]*pb.Slice) syscall.Errno {
-	return errno(m.Txn(func(txn store.KVTxn) error {
+	return errno(m.Txn(func(txn store.Txn) error {
 		val, err := txn.Merge(m.ChunkKey(volumeID, nodeID, indx), SliceMergeFunc)
 		if store.IsKeyNotFound(err) {
 			return syscall.ENOENT
@@ -41,7 +41,7 @@ func (m *meta) Read(ctx context.Context, volumeID uint32, nodeID uint64, indx ui
 
 func (m *meta) Write(ctx context.Context, volumeID uint32, nodeID uint64, indx uint32, off uint32, slice pb.Slice) syscall.Errno {
 	var newSpace int64
-	err := m.Txn(func(txn store.KVTxn) error {
+	err := m.Txn(func(txn store.Txn) error {
 		var attr pb.Attr
 
 		val, err := txn.Get(m.InodeKey(volumeID, nodeID))
